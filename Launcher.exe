@@ -33,7 +33,6 @@ launcher_main.ready()
 
 app.exec_()
 
-
 #ex1 = GUI()
 
 #qapp.exec_()
