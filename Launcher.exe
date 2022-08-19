@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+import os, sys
+import tkinter as tk
+
+from PyQt5.QtWidgets import QApplication, QWidget
+
+from _launcher.check_install import *
+
+app = QApplication(sys.argv)
