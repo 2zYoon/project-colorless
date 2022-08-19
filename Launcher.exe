@@ -1,9 +1,39 @@
 #!/usr/bin/env python
 import os, sys
-import tkinter as tk
 
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import Qt
 
-from _launcher.check_install import *
+from _lib.gui import GUI
 
-app = QApplication(sys.argv)
+##################
+# Initialization #
+##################
+app = QApplication([])
+
+launcher_cfg = {
+    "title": "Game Launcher",
+    "w": 800,
+    "h": 600,
+    "winflags": Qt.FramelessWindowHint,
+}
+
+launcher_main = GUI(**launcher_cfg)
+
+a = lambda: sys.exit()
+
+launcher_main.add_button(name="woo", x=10, y=10, func_cb=a)
+launcher_main.ready()
+
+#print(qapp.allWidgets())
+
+########
+# Test #
+########
+
+app.exec_()
+
+
+#ex1 = GUI()
+
+#qapp.exec_()
