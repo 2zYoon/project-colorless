@@ -1,27 +1,35 @@
-import pygame
+# Engine for in-game
+import pygame as pg
 import os, sys 
 
-from _lib.constant import *
+from _lib.constants import *
+from _lib.runtime import Runtime
 
-width = 600
-height = 400
+###########
+# Globals #
+###########
+Rt = Runtime()
 
-pygame.init()
+def game_main(**kwargs):
+    width = 600
+    height = 400
 
-pygame.display.set_caption('Test') 
+    pg.init()
 
-displaysurf = pygame.display.set_mode((width, height), 0, 32)
+    pg.display.set_caption('Test') 
 
-clock = pygame.time.Clock()
+    displaysurf = pg.display.set_mode((width, height), 0, 32)
 
-while True: 
-    for event in pygame.event.get():
-        if event.type == QUIT: 
-            pygame.quit() 
-            sys.exit()
+    clock = pg.time.Clock()
 
-    displaysurf.fill(WHITE) 
-    
-    pygame.display.update()
-    clock.tick(FPS)
+    while True: 
+        for event in pg.event.get():
+            if event.type == pg.QUIT: 
+                pg.quit() 
+                sys.exit()
+
+        displaysurf.fill(WHITE) 
+        
+        pg.display.update()
+        clock.tick(FPS)
 

@@ -50,18 +50,6 @@ class GUI(QWidget):
 
         self.center()
 
-        # basic buttons TODO: make configurable
-        ss_button_ctrl_common = "QPushButton { border: none; font: bold; font-size: 15px; }"
-        ss_button_ctrl_hover = "QPushButton:hover { background-color: #303030; }"
-        self.add_button(name="🗕", w=40, h=30, x=680, y=0, 
-            func_cb=self.showMinimized, 
-            stylesheet=ss_button_ctrl_common + ss_button_ctrl_hover)
-        self.add_button(name="🗖︎", w=40, h=30, x=720, y=0, 
-            stylesheet=ss_button_ctrl_common + "QPushButton { color: gray; }")
-        self.add_button(name="🗙︎", w=40, h=30, x=760, y=0, 
-            func_cb=self.close,
-            stylesheet=ss_button_ctrl_common + ss_button_ctrl_hover)
-
 
 
     # Add button on demand

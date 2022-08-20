@@ -1,21 +1,21 @@
-# Deals with runtime data
+# Deals with runtime data (at engine.py)
 
 class Runtime:
     def __init__(self, **kwargs):
         self.live = {
             # Mode
             # - A mode consists of several mode bits
-            "mode": int(0b000000000000),
+            "mode": int(0),
 
             # Current location
             # @mapcode: unique map code
             # @loc:     (x, y) location in map
             "mapcode": int(0),
-            "loc" = [int(0), int(0],
+            "loc": [int(0), int(0)],
             
             # Battle data
             # - Only used in battle phase
-            "inbattle" = {
+            "inbattle": {
                 # Current turn
                 # - start with 1
                 "turn": int(0),
@@ -38,7 +38,7 @@ class Runtime:
                     # Several stats
                     "atk": int(0),
                     "def": int(0),
-                }
+                },
 
                 # Enemy live information
                 # - Initialized using...
