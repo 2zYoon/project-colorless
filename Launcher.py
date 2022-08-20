@@ -5,6 +5,8 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt, QCoreApplication
 
 from _lib.gui import GUI
+from _lib.runtime import Runtime
+
 
 ###########
 # Globals #
