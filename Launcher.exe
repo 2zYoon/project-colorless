@@ -18,6 +18,8 @@ def launcher():
         "title": "Game Launcher",
         "w": LAUNCHER_LAYOUT["window"][layout][0],
         "h": LAUNCHER_LAYOUT["window"][layout][1],
+        "winflags": Qt.Window
+        #"winflags": Qt.FramelessWindowHint,
     }
 
     game_input = {
@@ -25,6 +27,7 @@ def launcher():
     }
 
     launcher_main = GUI(**launcher_cfg)
+    """
     launcher_main.add_button(
         name="🗕",
         w=40, h=30, x=LAUNCHER_LAYOUT["window"][layout][0]-120, y=0, 
@@ -44,6 +47,7 @@ def launcher():
         func_cb=launcher_main.close,
         stylesheet=SS_BUTTON_CTRL_DEFAULT
     )
+    """
 
     launcher_main.add_button(
         name="Game Start",

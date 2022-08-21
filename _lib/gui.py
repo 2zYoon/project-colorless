@@ -18,7 +18,7 @@ class GUI(QWidget):
                 background-color: #404040; 
             """,
 
-            "winflags": Qt.FramelessWindowHint,
+            "winflags": Qt.Window,
 
             # Button: enable | disable | hide
             "min-button": "enable",
@@ -46,7 +46,7 @@ class GUI(QWidget):
         self.setStyleSheet(self.cfg("stylesheet"))
         self.setWindowOpacity(self.cfg("opacity"))
         self.setWindowTitle(self.cfg("title"))
-        self.resize(self.cfg("w"), self.cfg("h"))        \
+        self.setFixedSize(self.cfg("w"), self.cfg("h"))        \
 
         self.center()
 
