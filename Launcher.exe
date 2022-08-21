@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os, sys
+import json
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt, QCoreApplication
@@ -8,69 +9,58 @@ from _lib.gui import GUI
 from _lib.constants import *
 from engine import game_main
 
+def launcher():
+    layout = int(1)
 
-##################
-# Initialization #
-##################
-app = QApplication([])
+    app = QApplication([])
 
-layout = int(sys.argv[1])
+    launcher_cfg = {
+        "title": "Game Launcher",
+        "w": LAUNCHER_LAYOUT["window"][layout][0],
+        "h": LAUNCHER_LAYOUT["window"][layout][1],
+    }
 
-launcher_cfg = {
-    "title": "Game Launcher",
-    "w": LAUNCHER_LAYOUT["window"][layout][0],
-    "h": LAUNCHER_LAYOUT["window"][layout][1],
-}
+    game_input = {
+        "resolution": [1024, 768],
+    }
 
-game_input = {
-    "resolution": [1024, 768],
-}
+    launcher_main = GUI(**launcher_cfg)
+    launcher_main.add_button(
+        name="🗕",
+        w=40, h=30, x=LAUNCHER_LAYOUT["window"][layout][0]-120, y=0, 
+        func_cb=launcher_main.showMinimized, 
+        stylesheet=SS_BUTTON_CTRL_DEFAULT
+    )
 
-launcher_main = GUI(**launcher_cfg)
+    launcher_main.add_button(
+        name="🗖︎",
+        w=40, h=30, x=LAUNCHER_LAYOUT["window"][layout][0]-80, y=0, 
+        stylesheet=SS_BUTTON_CTRL_DISABLED
+    )
 
+    launcher_main.add_button(
+        name="🗙︎", 
+        w=40, h=30, x=LAUNCHER_LAYOUT["window"][layout][0]-40, y=0, 
+        func_cb=launcher_main.close,
+        stylesheet=SS_BUTTON_CTRL_DEFAULT
+    )
 
-launcher_main.add_button(
-    name="🗕",
-    w=40, h=30, x=LAUNCHER_LAYOUT["window"][layout][0]-120, y=0, 
-    func_cb=launcher_main.showMinimized, 
-    stylesheet=SS_BUTTON_CTRL_DEFAULT
-)
+    launcher_main.add_button(
+        name="Game Start",
+        **{list(["w", "h", "x", "y"])[i]: LAUNCHER_LAYOUT["btn_gamestart"][layout][i] for i in range(4)},
+        func_cb=lambda: game_main(**game_input),
+        stylesheet=SS_BUTTON_DEFAULT + SS_FONTSIZE[LAUNCHER_LAYOUT["btn_gamestart"][layout][4]]
+    )
 
-launcher_main.add_button(
-    name="🗖︎",
-    w=40, h=30, x=LAUNCHER_LAYOUT["window"][layout][0]-80, y=0, 
-    stylesheet=SS_BUTTON_CTRL_DISABLED
-)
+    launcher_main.add_button(
+        name="Setting", 
+        **{list(["w", "h", "x", "y"])[i]: LAUNCHER_LAYOUT["btn_setting"][layout][i] for i in range(4)},
+        func_cb=launcher_main.close,
+        stylesheet=SS_BUTTON_DEFAULT + SS_FONTSIZE[LAUNCHER_LAYOUT["btn_setting"][layout][4]]
+    )
 
-launcher_main.add_button(
-    name="🗙︎", 
-    w=40, h=30, x=LAUNCHER_LAYOUT["window"][layout][0]-40, y=0, 
-    func_cb=launcher_main.close,
-    stylesheet=SS_BUTTON_CTRL_DEFAULT
-)
+    launcher_main.ready()
+    app.exec_()
 
-launcher_main.add_button(
-    name="Game Start",
-    **{list(["w", "h", "x", "y"])[i]: LAUNCHER_LAYOUT["btn_gamestart"][layout][i] for i in range(4)},
-    func_cb=lambda: game_main(**game_input),
-    stylesheet=SS_BUTTON_DEFAULT + SS_FONTSIZE[LAUNCHER_LAYOUT["btn_gamestart"][layout][4]]
-)
-
-launcher_main.add_button(
-    name="Setting", 
-    **{list(["w", "h", "x", "y"])[i]: LAUNCHER_LAYOUT["btn_setting"][layout][i] for i in range(4)},
-    func_cb=lambda: sys.exit(),
-    stylesheet=SS_BUTTON_DEFAULT + SS_FONTSIZE[LAUNCHER_LAYOUT["btn_setting"][layout][4]]
-)
-
-
-########
-# Test #
-########
-
-
-############
-# Launcher #
-############
-launcher_main.ready()
-app.exec_()
+if __name__ == "__main__":
+    launcher()
