@@ -12,6 +12,7 @@ class GUI(QWidget):
             "w": 320,
             "h": 240,
             "opacity": 1.0,
+            "fixedsize": True,
 
             "stylesheet": 
             """
@@ -46,7 +47,11 @@ class GUI(QWidget):
         self.setStyleSheet(self.cfg("stylesheet"))
         self.setWindowOpacity(self.cfg("opacity"))
         self.setWindowTitle(self.cfg("title"))
-        self.setFixedSize(self.cfg("w"), self.cfg("h"))        \
+
+        if self.cfg("fixedsize"):
+            self.setFixedSize(self.cfg("w"), self.cfg("h"))
+        else:
+            self.resize(self.cfg("w"), self.cfg("h"))       
 
         self.center()
 
