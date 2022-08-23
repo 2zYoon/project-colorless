@@ -86,3 +86,15 @@ SS_FONTSIZE = ["QPushButton { font-size: %dpx; }" % i for i in range(100) ]
 # Game engine #
 ###############
 FPS = 60
+MOVE_SCALE = 10
+
+
+
+# Mode bits                 
+MODE_MOVE_4K_ALLOWED    = 0 # Handles up/down/left/right key event for character moving
+MODE_MOVE_STUCK         = 1 # Does not move actually
+MODE_SHOW_UPPER_MENU    = 30
+
+LIST_MODE_INITIAL_SET = [
+    None
+]

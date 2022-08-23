@@ -10,8 +10,9 @@ class Runtime:
             # Current location
             # @mapcode: unique map code
             # @loc:     (x, y) location in map
+            #           uses float type but casted to int at the end
             "mapcode": int(0),
-            "loc": [int(0), int(0)],
+            "loc": [float(0), float(0)],
             
             # Battle data
             # - Only used in battle phase
@@ -61,10 +62,9 @@ class Runtime:
         }
 
 
-    ##############
-    # Interfaces #
-    ##############
-    
+    ######################
+    # General Interfaces #
+    ######################
     # Load all the data at initialization, from both local and remote
     # @return: returns 0 if success
     #          returns nonzero value otherwise
@@ -85,6 +85,43 @@ class Runtime:
 
     def GetLocal(self, key):
         pass
+
+    #######################
+    # In-game manipulator #
+    #######################
+    # Returns destination but does not move actually
+    def move_ch_check(self, delta):
+        return self.live["loc"][0] + delta[0], self.live["loc"][1] + delta[1]
+
+    # Moves character
+    # The caller (engine) is responsible to check
+    def move_ch(self, delta):
+        self.live["loc"][0] += delta[0]
+        self.live["loc"][1] += delta[1]
+
+
+    ##################
+    # Getter/setters #
+    ##################
+    # Gets/sets a single bit
+    def get_mode(self, bit):
+        return (self.live["mode"] >> bit) & 1
+
+    def set_mode(self, bit):
+        self.live["mode"] = self.live["mode"] | (1 << bit)
+
+    def unset_mode(self, bit):
+        self.live["mode"] = self.live["mode"] & ~(1 << bit)
+
+    # Gets/sets character location
+    def get_ch_loc(self):
+        return self.live["loc"]
+    
+    def get_ch_loc_int(self):
+        return int(self.live["loc"][0]), int(self.live["loc"][1])
+    
+    def set_ch_loc(self, loc_new):
+        self.live["loc"] = loc_new
 
     ####################
     # Internal methods #

@@ -10,6 +10,8 @@ from _lib.constants import *
 from engine import game_main
 
 def launcher():
+    ret = -1
+
     layout = int(1)
 
     app = QApplication([])
