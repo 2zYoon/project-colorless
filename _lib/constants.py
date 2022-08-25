@@ -4,18 +4,19 @@
 ##########
 
 # Colors
-WHITE =      (255, 255, 255)
-BLACK =      (0, 0, 0)
-GRAY =       (128, 128, 128)
-GRAY10 =     (26, 26, 26)
-GRAY20 =     (51, 51, 51)
-GRAY30 =     (76, 76, 76)
-GRAY40 =     (102, 102, 102)
-GRAY50 =     (128, 128, 128)
-GRAY60 =     (153, 153, 153)
-GRAY70 =     (179, 179, 179)
-GRAY80 =     (204, 204, 204)
-GRAY90 =     (230, 230, 230)
+TRANSPARENT =   (0, 0, 0, 0)
+WHITE =         (255, 255, 255)
+BLACK =         (0, 0, 0)
+GRAY =          (128, 128, 128)
+GRAY10 =        (26, 26, 26)
+GRAY20 =        (51, 51, 51)
+GRAY30 =        (76, 76, 76)
+GRAY40 =        (102, 102, 102)
+GRAY50 =        (128, 128, 128)
+GRAY60 =        (153, 153, 153)
+GRAY70 =        (179, 179, 179)
+GRAY80 =        (204, 204, 204)
+GRAY90 =        (230, 230, 230)
 
 
 ############
@@ -90,10 +91,12 @@ MOVE_SCALE = 10
 
 
 
-# Mode bits                 
-MODE_MOVE_4K_ALLOWED    = 0 # Handles up/down/left/right key event for character moving
-MODE_MOVE_STUCK         = 1 # Does not move actually
-MODE_SHOW_UPPER_MENU    = 30
+
+
+# Mode bits
+MODEBIT_MOVE_4K_ALLOWED    = 0 # Handles up/down/left/right key event for character moving
+MODEBIT_MOVE_STUCK         = 1 # Does not move actually
+MODEBIT_SHOW_UPPER_MENU    = 30
 
 LIST_MODE_INITIAL_SET = [
     None
