@@ -92,11 +92,25 @@ MOVE_SCALE = 10
 
 
 
+#############
+# Mode bits #
+#############
 
-# Mode bits
-MODEBIT_MOVE_4K_ALLOWED    = 0 # Handles up/down/left/right key event for character moving
-MODEBIT_MOVE_STUCK         = 1 # Does not move actually
-MODEBIT_SHOW_UPPER_MENU    = 30
+# Mode key (used by Runtime)
+MODE_KEY_SYS = 0
+MODE_KEY_GP = 1
+
+
+
+# System
+MODEBIT_SYS_MOVE_4K_ALLOWED    = 0  # Handles up/down/left/right key event for character moving
+MODEBIT_SYS_MOVE_STUCK         = 1  # Does not move actually
+
+# Graphic
+MODEBIT_GP_SHOW_LEFT_MENU       = 10
+MODEBIT_GP_SHOW_RIGHT_MENU     = 20
+
+MODEBIT_GP_SHOW_GRID          = 50 # Show grid
 
 LIST_MODE_INITIAL_SET = [
     None

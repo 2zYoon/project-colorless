@@ -5,7 +5,7 @@ class Runtime:
         self.live = {
             # Mode
             # - A mode consists of several mode bits
-            "mode": int(0),
+            "mode": [int(0), int(0), int(0)],
 
             # Current location
             # @mapcode: unique map code
@@ -104,14 +104,14 @@ class Runtime:
     # Getter/setters #
     ##################
     # Gets/sets a single bit
-    def get_mode(self, bit):
-        return (self.live["mode"] >> bit) & 1
+    def get_mode(self, modekey, bit):
+        return (self.live["mode"][modekey] >> bit) & 1
 
-    def set_mode(self, bit):
-        self.live["mode"] = self.live["mode"] | (1 << bit)
+    def set_mode(self, modekey, bit):
+        self.live["mode"][modekey] = self.live["mode"][modekey] | (1 << bit)
 
-    def unset_mode(self, bit):
-        self.live["mode"] = self.live["mode"] & ~(1 << bit)
+    def unset_mode(self, modekey, bit):
+        self.live["mode"][modekey] = self.live["mode"][modekey] & ~(1 << bit)
 
     # Gets/sets character location
     def get_ch_loc(self):
