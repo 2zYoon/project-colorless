@@ -1,5 +1,8 @@
 # Deals with runtime data (at engine.py)
 
+from _lib.constants import *
+
+
 class Runtime:
     def __init__(self, **kwargs):
         self.live = {
@@ -14,6 +17,11 @@ class Runtime:
             "mapcode": int(0),
             "loc": [float(0), float(0)],
             
+            # Character info
+            "character": {
+                "speed": 3,
+            },
+
             # Battle data
             # - Only used in battle phase
             "inbattle": {
@@ -89,15 +97,21 @@ class Runtime:
     #######################
     # In-game manipulator #
     #######################
+    def get_ch_speed(self):
+        return self.live["character"]["speed"]
+
     # Returns destination but does not move actually
     def move_ch_check(self, delta):
         return self.live["loc"][0] + delta[0], self.live["loc"][1] + delta[1]
 
+    def moveto_ch(self, dest):
+        self.live["loc"] = list(dest)
+
     # Moves character
     # The caller (engine) is responsible to check
     def move_ch(self, delta):
-        self.live["loc"][0] += delta[0]
-        self.live["loc"][1] += delta[1]
+        self.live["loc"][0] += delta[0] * self.get_ch_speed() * MOVE_SCALE 
+        self.live["loc"][1] += delta[1] * self.get_ch_speed() * MOVE_SCALE
 
 
     ##################
@@ -118,10 +132,12 @@ class Runtime:
         return self.live["loc"]
     
     def get_ch_loc_int(self):
-        return int(self.live["loc"][0]), int(self.live["loc"][1])
+        return [int(self.live["loc"][0]), int(self.live["loc"][1])]
     
     def set_ch_loc(self, loc_new):
         self.live["loc"] = loc_new
+
+    
 
     ####################
     # Internal methods #

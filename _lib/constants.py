@@ -1,3 +1,4 @@
+# DO NOT INCLUDE ANY INTERNAL LIBS
 
 ##########
 # Common #
@@ -8,15 +9,9 @@ TRANSPARENT =   (0, 0, 0, 0)
 WHITE =         (255, 255, 255)
 BLACK =         (0, 0, 0)
 GRAY =          (128, 128, 128)
-GRAY10 =        (26, 26, 26)
-GRAY20 =        (51, 51, 51)
-GRAY30 =        (76, 76, 76)
-GRAY40 =        (102, 102, 102)
-GRAY50 =        (128, 128, 128)
-GRAY60 =        (153, 153, 153)
-GRAY70 =        (179, 179, 179)
-GRAY80 =        (204, 204, 204)
-GRAY90 =        (230, 230, 230)
+
+BLACK_PERCENT = lambda pct: [int(255 * (100-pct) / 100)] * 3
+ALPHA = lambda pct: int(255 * pct / 100)
 
 
 ############
@@ -87,9 +82,10 @@ SS_FONTSIZE = ["QPushButton { font-size: %dpx; }" % i for i in range(100) ]
 # Game engine #
 ###############
 FPS = 60
-MOVE_SCALE = 10
+MOVE_SCALE = 1.0
 
-
+GRID_UNIT=32
+GRID = lambda n_grid: int(n_grid * GRID_UNIT)
 
 
 #############
@@ -115,3 +111,5 @@ MODEBIT_GP_SHOW_GRID          = 50 # Show grid
 LIST_MODE_INITIAL_SET = [
     None
 ]
+
+
