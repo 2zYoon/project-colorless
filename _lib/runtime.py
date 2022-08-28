@@ -123,9 +123,17 @@ class Runtime:
 
     def set_mode(self, modekey, bit):
         self.live["mode"][modekey] = self.live["mode"][modekey] | (1 << bit)
+        return 1
 
     def unset_mode(self, modekey, bit):
         self.live["mode"][modekey] = self.live["mode"][modekey] & ~(1 << bit)
+        return 0
+
+    def switch_mode(self, modekey, bit):
+        if (self.live["mode"][modekey] >> bit) & 1:
+            return self.unset_mode(modekey, bit)
+        else:
+            return self.set_mode(modekey, bit)
 
     # Gets/sets character location
     def get_ch_loc(self):
