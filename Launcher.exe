@@ -6,8 +6,70 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt, QCoreApplication
 
 from _lib.gui import GUI
-from _lib.constants import *
+from _lib.commons import *
 from engine import game_main
+
+# Layouts
+# key: (val-small, val-medium, val-large)
+LAYOUT_SMALL = 0
+LAYOUT_MEDIUM = 1
+LAYOUT_LARGE = 2
+
+LAUNCHER_LAYOUT = {
+    # Window size: (w, h)
+    "window": [ 
+        (400, 300), 
+        (800, 600),
+        (1200, 900)
+    ],
+    # Game start button: (w, h, x, y)
+    "btn_gamestart": [
+        (280, 40, 10, 250, 30),
+        (460, 50, 50, 510, 36),
+        (740, 100, 60, 750, 48)
+    ],
+    # Setting button: (w, h, x, y, font-size)
+    "btn_setting": [
+        (90, 40, 300, 250, 22),
+        (200, 50, 540, 510, 28),
+        (300, 100, 840, 750, 40)
+    ],
+}
+
+# Stylesheets
+SS_BUTTON_DEFAULT = """
+QPushButton { 
+    background-color: #202020; 
+    border: none; 
+    border-radius: 5px; 
+    font-size: 36px; 
+    color: #dddddd; 
+} 
+QPushButton:hover { 
+    background-color: #303030; 
+}"""
+
+SS_BUTTON_CTRL_DEFAULT = """
+QPushButton { 
+    border: none; 
+    font: bold; 
+    font-size: 15px; 
+} 
+QPushButton:hover { 
+    background-color: #303030; 
+}"""
+
+SS_BUTTON_CTRL_DISABLED = """
+QPushButton { 
+    border: none; 
+    font: bold; 
+    font-size: 15px; 
+    color: gray; 
+}"""
+
+SS_FONTSIZE = ["QPushButton { font-size: %dpx; }" % i for i in range(100) ]
+
+
 
 def launcher():
     ret = -1

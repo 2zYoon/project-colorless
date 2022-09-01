@@ -5,7 +5,7 @@ import pygame as pg
 from pygame.locals import *
 import os, sys 
 
-from _lib.constants import *
+from _lib.commons import *
 from _lib.runtime import Runtime
 from _lib.graphics import ImgLoad, Graphic
 

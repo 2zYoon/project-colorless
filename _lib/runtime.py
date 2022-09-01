@@ -1,6 +1,6 @@
 # Deals with runtime data (at engine.py)
 
-from _lib.constants import *
+from _lib.commons import *
 
 
 class Runtime:

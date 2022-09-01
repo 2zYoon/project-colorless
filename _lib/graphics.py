@@ -3,7 +3,7 @@ from pygame.locals import *
 
 import os
 
-from _lib.constants import *
+from _lib.commons import *
 
 # All of them must be used after pg.init() 
 
