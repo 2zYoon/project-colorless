@@ -108,10 +108,9 @@ class Runtime:
         self.live["loc"] = list(dest)
 
     # Moves character
-    # The caller (engine) is responsible to check
-    def move_ch(self, delta):
-        self.live["loc"][0] += delta[0] * self.get_ch_speed() * MOVE_SCALE 
-        self.live["loc"][1] += delta[1] * self.get_ch_speed() * MOVE_SCALE
+    def move_ch(self, delta, bound=[2**10, 2**10]):
+        self.live["loc"][0] = min(max(0, self.live["loc"][0] + delta[0] * self.get_ch_speed() * MOVE_SCALE), bound[0])
+        self.live["loc"][1] = min(max(0, self.live["loc"][1] + delta[1] * self.get_ch_speed() * MOVE_SCALE), bound[1])
 
 
     ##################

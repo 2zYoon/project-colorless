@@ -63,21 +63,22 @@ class Graphic:
         else:
             return pg.transform.scale(self.basic_asset[key], size)
 
+    def get_win_size(self):
+        return self.win_size
+
     # @rect: if rect is given, returns rect-aware center position
     def get_center(self, rect=None):
         if rect == None:
             return [self.win_size[0] // 2, self.win_size[1] // 2]
         else:
-            return [(self.win_size[0] - list(rect)[2]) // 2, (self.win_size[1] - list(rect)[3]) // 2]
-
-            if str(type(rect)) == "<class \'pygame.Rect\'>":
-                pass
-
-            elif len(rect) == 4:
-                pass
-            
+            # x, y, w, h
+            if len(rect) == 4:
+                return [(self.win_size[0] - list(rect)[2]) // 2, (self.win_size[1] - list(rect)[3]) // 2]
+            # w, h
+            elif len(rect) == 2:
+                return [(self.win_size[0] - list(rect)[0]) // 2, (self.win_size[1] - list(rect)[1]) // 2]
             else:
-                assert(0)
+                assert("get_center: invalid rect")
 
 
     def draw_rect(self, rect, screen_num=0, color=BLACK, alpha=ALPHA(100), border_width=0, border_color=BLACK, text=None, fontsize=None, fontcolor=None):

@@ -1,10 +1,8 @@
 # DO NOT INCLUDE ANY INTERNAL LIBS
 
-##########
-# Common #
-##########
-
-# Colors
+########################
+# Color, Visualization #
+########################
 TRANSPARENT =   (0, 0, 0, 0)
 WHITE =         (255, 255, 255)
 BLACK =         (0, 0, 0)
@@ -27,7 +25,7 @@ MOVE_SCALE = 1.0
 
 GRID_UNIT=32
 GRID = lambda n_grid: int(n_grid * GRID_UNIT)
-
+COORDINATE_TO_GRID = lambda x: int(min(0, x // GRID_UNIT))
 
 #############
 # Mode bits #

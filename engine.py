@@ -1,14 +1,15 @@
 # Engine for in-game
 
 from cmath import rect
+from re import M
 import pygame as pg
 from pygame.locals import *
 import os, sys 
 
 from _lib.commons import *
-from _lib.runtime import Runtime
-from _lib.graphics import ImgLoad, Graphic
-
+from _lib.runtime import *
+from _lib.graphics import *
+from _lib.map import *
 
 ###########
 # Globals #
@@ -44,7 +45,10 @@ def game_main(**kwargs):
 
     move_delta = [0, 0] # x, y
 
+    # MAIN LOOP
     while True: 
+        map_current = m_test
+
         #################
         # Event handler #
         #################
@@ -53,6 +57,12 @@ def game_main(**kwargs):
                 pg.quit() 
                 sys.exit()
                 # TODO: Add saving data
+
+            # FIXME: for test
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE:
+                    pg.quit()
+                    sys.exit()
 
             # Handles arrow keys to try to move            
             if Rt.get_mode(MODE_KEY_SYS, MODEBIT_SYS_MOVE_4K_ALLOWED):
@@ -84,8 +94,10 @@ def game_main(**kwargs):
         # Main ingame handler #
         #######################
         # move character
-        if not Rt.get_mode(MODE_KEY_SYS, MODEBIT_SYS_MOVE_STUCK):
-            Rt.move_ch(move_delta)
+        if (not Rt.get_mode(MODE_KEY_SYS, MODEBIT_SYS_MOVE_STUCK)) and not (move_delta[0] == move_delta[1] == 0):
+            Rt.move_ch(move_delta, bound=map_current.get_size_grid())
+            # for test
+            print(Rt.get_ch_loc_int())
 
         ###########        
         # DISPLAY #
@@ -93,6 +105,11 @@ def game_main(**kwargs):
         # This must be called first
         graphic.clear_screen()
 
+        ########
+        # TEST #
+        ########
+
+        # LEFT SIDE MENU
         if Rt.get_mode(MODE_KEY_GP, MODEBIT_GP_SHOW_LEFT_MENU):
             graphic.draw_rect(rect=[GRID(0), GRID(0), GRID(8), graphic.win_size[1]], 
                                 screen_num=4, 
@@ -104,6 +121,7 @@ def game_main(**kwargs):
                                     color=BLACK_PERCENT(95), 
                                     alpha=ALPHA(100))
 
+        # RIGHT SIDE MENU
         if Rt.get_mode(MODE_KEY_GP, MODEBIT_GP_SHOW_RIGHT_MENU):
             graphic.draw_rect(rect=[graphic.win_size[0]-256, 0, 256, graphic.win_size[1]], 
                                 screen_num=4, 
@@ -111,11 +129,41 @@ def game_main(**kwargs):
                                 alpha=ALPHA(100))
 
 
+        # GRID
         if Rt.get_mode(MODE_KEY_GP, MODEBIT_GP_SHOW_GRID):
             graphic.draw_grid(1, WHITE, ALPHA(20))
 
-        #print(Rt.get_ch_loc())
-        graphic.draw_rect(rect=Rt.get_ch_loc() + [GRID(1), GRID(1)],
+
+        # Calculate map drawing start/end point
+        # Example:
+        #     ===== ===== WINDOW ===== =====
+        # 10:    -----@-----[]-----@-----
+        # 5 :          -----[]-----@-----@-----    
+        # 0 :               []-----@-----@-----@-----
+        start_x_on_window = max(0, graphic.get_center()[0] - Rt.get_ch_loc()[0])
+        start_y_on_window = max(0, graphic.get_center()[1] - Rt.get_ch_loc()[1])
+
+        start_x_on_map = max(0, map_current.get_size()[0] // 2 - Rt.get_ch_loc()[0])
+        start_y_on_map = max(0, map_current.get_size()[1] // 2 - Rt.get_ch_loc()[1])
+
+        for y in range(map_current.get_size()[1]):
+            for x in range(map_current.get_size()[0]):
+                graphic.draw_rect(
+                    rect=[start_x_on_window + GRID(x), start_y_on_window + GRID(y)] + [GRID(1), GRID(1)],
+                    screen_num=4,
+                    color=BLACK,
+                    alpha=ALPHA(50)
+                )
+        
+        
+        graphic.draw_rect(rect=graphic.get_center(rect=[GRID(1), GRID(1)]) + [GRID(1), GRID(1)],
+                            screen_num=4,
+                            color=BLACK,
+                            alpha=ALPHA(100))
+
+        # CHARACTER (TEST)
+        if 0:
+            graphic.draw_rect(rect=Rt.get_ch_loc() + [GRID(1), GRID(1)],
                             screen_num=4,
                             color=BLACK,
                             alpha=ALPHA(100))
