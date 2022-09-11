@@ -21,7 +21,7 @@ ALPHA = lambda pct: int(255 * pct / 100)
 # Game engine #
 ###############
 FPS = 60
-MOVE_SCALE = 1.0
+MOVE_SCALE = 3.0
 
 GRID_UNIT=32
 GRID = lambda n_grid: int(n_grid * GRID_UNIT)

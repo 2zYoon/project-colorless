@@ -41,6 +41,10 @@ class Graphic:
             pg.Surface(win_size).convert_alpha(),
             pg.Surface(win_size).convert_alpha(), 
             pg.Surface(win_size).convert_alpha(), 
+            pg.Surface(win_size).convert_alpha(),    
+            pg.Surface(win_size).convert_alpha(),    
+            pg.Surface(win_size).convert_alpha(),    
+            pg.Surface(win_size).convert_alpha(),    
             pg.Surface(win_size).convert_alpha(),         
         ]
     

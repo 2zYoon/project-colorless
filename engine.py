@@ -95,9 +95,9 @@ def game_main(**kwargs):
         #######################
         # move character
         if (not Rt.get_mode(MODE_KEY_SYS, MODEBIT_SYS_MOVE_STUCK)) and not (move_delta[0] == move_delta[1] == 0):
-            Rt.move_ch(move_delta, bound=map_current.get_size_grid())
+            Rt.move_ch(move_delta, bound=map_current.get_size())
             # for test
-            print(Rt.get_ch_loc_int())
+            #print(Rt.get_ch_loc_int())
 
         ###########        
         # DISPLAY #
@@ -140,34 +140,43 @@ def game_main(**kwargs):
         # 10:    -----@-----[]-----@-----
         # 5 :          -----[]-----@-----@-----    
         # 0 :               []-----@-----@-----@-----
-        start_x_on_window = max(0, graphic.get_center()[0] - Rt.get_ch_loc()[0])
-        start_y_on_window = max(0, graphic.get_center()[1] - Rt.get_ch_loc()[1])
-
-        start_x_on_map = max(0, map_current.get_size()[0] // 2 - Rt.get_ch_loc()[0])
-        start_y_on_map = max(0, map_current.get_size()[1] // 2 - Rt.get_ch_loc()[1])
-
-        for y in range(map_current.get_size()[1]):
-            for x in range(map_current.get_size()[0]):
-                graphic.draw_rect(
-                    rect=[start_x_on_window + GRID(x), start_y_on_window + GRID(y)] + [GRID(1), GRID(1)],
-                    screen_num=4,
-                    color=BLACK,
-                    alpha=ALPHA(50)
-                )
         
-        
+        start_x_on_window = graphic.get_center()[0] - Rt.get_ch_loc()[0]
+        start_y_on_window = graphic.get_center()[1] - Rt.get_ch_loc()[1]
+
+        #start_x_on_map = max(0, map_current.get_size()[0] // 2 - Rt.get_ch_loc()[0])
+        #start_y_on_map = max(0, map_current.get_size()[1] // 2 - Rt.get_ch_loc()[1])
+
+
+        for y in range(map_current.get_size_grid()[1]):
+            for x in range(map_current.get_size_grid()[0]):
+                # TODO: skip rendering if the rect is not visible (out of window)
+
+                screen_num, render_type, value = map_current.render_tile(x, y)
+            
+                if render_type == RENDER_TYPE_COLOR:
+                    color_to_render = ((value >> 24) & 0xff, 
+                                        (value >> 16) & 0xff,
+                                        (value >> 8) & 0xff
+                    )
+                    alpha_to_render = value & 0xff
+
+                    graphic.draw_rect(
+                        rect=[start_x_on_window + GRID(x), start_y_on_window + GRID(y)] + [GRID(1), GRID(1)],
+                        screen_num=screen_num,
+                        color=color_to_render,
+                        alpha=alpha_to_render
+                    )
+                
+                if render_type == RENDER_TYPE_IMAGE:
+                    pass # TODO
+
+        # Character
         graphic.draw_rect(rect=graphic.get_center(rect=[GRID(1), GRID(1)]) + [GRID(1), GRID(1)],
                             screen_num=4,
                             color=BLACK,
                             alpha=ALPHA(100))
-
-        # CHARACTER (TEST)
-        if 0:
-            graphic.draw_rect(rect=Rt.get_ch_loc() + [GRID(1), GRID(1)],
-                            screen_num=4,
-                            color=BLACK,
-                            alpha=ALPHA(100))
-
+    
         graphic.show_screen()
         pg.display.update()
         clock.tick(FPS)
