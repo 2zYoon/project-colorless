@@ -21,7 +21,7 @@ ALPHA = lambda pct: int(255 * pct / 100)
 # Game engine #
 ###############
 FPS = 60
-MOVE_SCALE = 3.0
+MOVE_SCALE = 1.0
 
 GRID_UNIT=32
 GRID = lambda n_grid: int(n_grid * GRID_UNIT)
@@ -40,15 +40,16 @@ MODE_KEY_GP = 1
 # System
 MODEBIT_SYS_MOVE_4K_ALLOWED    = 0  # Handles up/down/left/right key event for character moving
 MODEBIT_SYS_MOVE_STUCK         = 1  # Does not move actually
+MODEBIT_SYS_TERMINAL           = 2  # map mode (0) / terminal mode (1) 
 
 # Graphic
 MODEBIT_GP_SHOW_LEFT_MENU       = 10
 MODEBIT_GP_SHOW_RIGHT_MENU     = 20
+MODEBIT_GP_SHOW_XY              = 30
 
 MODEBIT_GP_SHOW_GRID          = 50 # Show grid
 
 LIST_MODE_INITIAL_SET = [
-    None
 ]
 
 
