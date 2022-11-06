@@ -141,13 +141,11 @@ def move_player():
 box_eager_status = Entity(model='quad', origin=(0.5, -0.5), color=color.azure, position=(0, 0))
 txt_coordinate = Text("", origin=(0.5, -0.5), position=(0.5*window.aspect_ratio, -0.5), color=color.black50)
 
-
 def update_eager_status():
     global txt_coordinate
 
-
-
     txt_coordinate.text=f"[{player.x:.2f}, {player.y:.2f}]"
+    
 
 def update():
     move_player()
