@@ -1,19 +1,15 @@
 import os
 import sys
+
 from ursina import *
+
+from Color import *
 
 # Basedir
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
-# Color
-TRANSPARENT =   (0, 0, 0, 0)
-WHITE =         (255, 255, 255, 255)
-BLACK =         (0, 0, 0, 255)
-DARKGRAY =      (32, 32, 32, 255)
-GRAY =          (128, 128, 128, 255)
-WHITEGRAY =     (192, 192, 192, 255)
-
-ALPHA = lambda pct: int(255 * pct / 100)
+# Some constants
+SCALE_PLAYER = 0.25
 
 def toggle_button_list(button_list):
     for button in button_list:
@@ -47,16 +43,23 @@ SPEED_BOOST = 2
 # Live map data
 basemap = Entity(model='quad', color=color.gray, scale=(1, 1), x=5, y=5)
 walls = []
+npcs = dict()
 
 def update_map(mapname="test"):
     global basemap
     global walls
+    global npcs
 
     # Cleanup all of components
     destroy(basemap)
     for wall in walls:
         destroy(wall)
         walls.remove(wall)
+    
+    for npc_name, npc_dat in npcs.items():
+        destroy(npc_dat[0])
+        destroy(npc_dat[1])
+    npcs = dict()
 
     # New map path
     mappath = f"{BASEDIR}/map/{mapname}"
@@ -76,16 +79,28 @@ def update_map(mapname="test"):
         walls_tmp = f.read().strip().split("\n") 
         for wall in walls_tmp:
             try:
-                wall_x, wall_y, wall_w, wall_h = list(map(float, wall.split(",")))
+                wall_x, wall_y, wall_w, wall_h = list(wall.split(","))
             except:
                 break
 
             # FIXME: make transparent
-            walls.append(Entity(model="quad", color=color.black, scale=(wall_w, wall_h), x=wall_x, y=wall_y, z=-1, collider="box"))
+            walls.append(Entity(model="quad", color=color.black, scale=(float(wall_w), float(wall_h)), x=float(wall_x), y=float(wall_y), z=-1, collider="box"))
         
-    
+    with open(f"{mappath}/npc.dat") as f:
+        npcs_tmp = f.read().strip().split("\n") 
+        for npc in npcs_tmp:
+            try:
+                npc_x, npc_y, npc_color, name = list(npc.split(","))
+            except:
+                print("oops")
+                break
+            
+            # circle, tooltip
+            # TODO: customize
+            npcs[name] = [Entity(model='circle', color=hex_to_rgba(int(npc_color, 16)), scale=(0.25, 0.25), x=float(npc_x), y=float(npc_y), z=-1), None]
 
-player = Entity(model='sphere', color=color.azure, scale=(0.25, 0.25), x=0, y=0, z=-1)
+
+player = Entity(model='circle', color=color.azure, scale=(SCALE_PLAYER, SCALE_PLAYER), x=0, y=0, z=-1)
 
 
 button_menu = Button(
@@ -115,8 +130,8 @@ def move_player():
     move_direction = Vec2((held_keys['d']-held_keys['a']), (held_keys['w']-held_keys['s'])).normalized()
     speed = SPEED_DEFAULT + held_keys['space'] * SPEED_BOOST
     
-    dest_x = player.position[0] + move_direction[0] * speed * time.dt
-    dest_y = player.position[1] + move_direction[1] * speed * time.dt
+    dest_x = player.position[0] + (move_direction[0] * speed * time.dt)
+    dest_y = player.position[1] + (move_direction[1] * speed * time.dt)
 
     if not is_in_entity([dest_x, player.position[1]], basemap):
         move_direction[0] = 0
@@ -159,6 +174,7 @@ def input(key):
         
     if key == 'x': # debug
         print("press X")
+        update_map()
 
     if key == "q":
         print("press Q")
