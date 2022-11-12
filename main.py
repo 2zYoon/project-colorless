@@ -100,7 +100,7 @@ def update_map(mapname="test"):
             npcs[name] = [Entity(model='circle', color=hex_to_rgba(int(npc_color, 16)), scale=(0.25, 0.25), x=float(npc_x), y=float(npc_y), z=-1), None]
 
 
-player = Entity(model='circle', color=color.azure, scale=(SCALE_PLAYER, SCALE_PLAYER), x=0, y=0, z=-1)
+player = Entity(model='circle', color=color.azure, scale=(SCALE_PLAYER, SCALE_PLAYER), x=0, y=0, z=-1.1)
 
 
 button_menu = Button(
@@ -151,6 +151,7 @@ def move_player():
         
     player.position += move_direction * speed * time.dt
 
+txt_npcinfo = Text("...", origin=(0.5, -0.5), position=(0.5*window.aspect_ratio, -0.4), color=color.black50)
 
 # Eager status
 box_eager_status = Entity(model='quad', origin=(0.5, -0.5), color=color.azure, position=(0, 0))
@@ -160,11 +161,27 @@ def update_eager_status():
     global txt_coordinate
 
     txt_coordinate.text=f"[{player.x:.2f}, {player.y:.2f}]"
-    
+
+def distance_check_npc():
+    someone_closed = False
+    for npc_name, npc_dat in npcs.items():
+        print(f"{npc_name}: {distance(player, npc_dat[0])}")
+        if distance(player, npc_dat[0]) < SCALE_PLAYER * 1:
+            someone_closed = True
+            txt_npcinfo.text = npc_name
+            
+
+    if not someone_closed:
+        print("disabled!")
+        txt_npcinfo.disable()
+    else:
+        print("enabled!")
+        txt_npcinfo.enable()
 
 def update():
     move_player()
     update_eager_status()
+    distance_check_npc()
 
           
 def input(key):
