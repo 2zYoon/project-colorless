@@ -8,8 +8,6 @@ from ursina.prefabs.window_panel import WindowPanel, Space
 from lib.common import *
 from lib.player import *
 
-from Color import *
-
 # Basedir
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -45,23 +43,16 @@ SPEED_BOOST = 2
 # Live map data
 basemap = Entity(model='quad', color=color.gray, scale=(1, 1), x=5, y=5)
 walls = []
-npcs = dict()
 
 def update_map(mapname="test"):
     global basemap
     global walls
-    global npcs
 
     # Cleanup all of components
     destroy(basemap)
     for wall in walls:
         destroy(wall)
         walls.remove(wall)
-    
-    for npc_name, npc_dat in npcs.items():
-        destroy(npc_dat[0])
-        destroy(npc_dat[1])
-    npcs = dict()
 
     # New map path
     mappath = f"{BASEDIR}/map/{mapname}"
@@ -81,7 +72,7 @@ def update_map(mapname="test"):
         walls_tmp = f.read().strip().split("\n") 
         for wall in walls_tmp:
             try:
-                wall_x, wall_y, wall_w, wall_h = list(wall.split(","))
+                wall_x, wall_y, wall_w, wall_h = list(map(float, wall.split(",")))
             except:
                 break
 
@@ -119,18 +110,29 @@ bars = [
     HealthBar()     # Encounter
 ]
 
+IDX_END_BATTLE = 3
 battle_panel = WindowPanel(
     title = "Battle",
     content=[
         Space(height=5),
         Text("..."),
         Space(height=5),
-        #Button(text='Submit', color=color.azure),
+        Button(text='End Battle', color=color.azure),
     ],
-
+    popup=True
 )
 
+def close_battle():
+    global battle_panel
+    
+    battle_panel.close()
+    player_data.movable_system = True
 
+def open_battle():
+    global battle_panel
+
+    battle_panel.enabled = True
+    player_data.movable_system = False
 
 def init_battle_UI():
     global battle_panel
@@ -140,7 +142,12 @@ def init_battle_UI():
     battle_panel.lock = Vec3(1,1,1)
     battle_panel.y = 0.3
 
-    battle_panel.panel.color = NORMALIZE_COLOR()
+    battle_panel.panel.color = NORMALIZE_COLOR((25, 25, 255, 100))
+
+    battle_panel.content[IDX_END_BATTLE].on_click = close_battle
+
+    # popup, but disable manual closing
+    battle_panel.bg.on_click = None
 
 def update_bars():
     global bars
@@ -226,8 +233,8 @@ def move_player():
     move_direction = Vec2((held_keys['d']-held_keys['a']), (held_keys['w']-held_keys['s'])).normalized()
     speed = SPEED_DEFAULT + held_keys['space'] * SPEED_BOOST
     
-    dest_x = player.position[0] + (move_direction[0] * speed * time.dt)
-    dest_y = player.position[1] + (move_direction[1] * speed * time.dt)
+    dest_x = player.position[0] + move_direction[0] * speed * time.dt
+    dest_y = player.position[1] + move_direction[1] * speed * time.dt
 
     if not is_in_entity([dest_x, player.position[1]], basemap):
         move_direction[0] = 0
@@ -247,7 +254,7 @@ def move_player():
         
     player.position += move_direction * speed * time.dt
     player_data.position = player.position
-    player_data.encounter += 1.0 * 100.0 * (abs(move_direction[0]) + abs(move_direction[1])) * time.dt
+    player_data.encounter += 1.0 * 200.0 * (abs(move_direction[0]) + abs(move_direction[1])) * time.dt
 
     if int(player_data.encounter) != int(player_data.last_encounter):
         if int(player_data.encounter / 100) != int(player_data.last_check_encounter / 100):
@@ -257,13 +264,13 @@ def move_player():
 
             if initiate_battle:
                 # do battle
+                open_battle()
                 pass
 
         update_bars()
         player_data.last_encounter = int(player_data.encounter)
 
 
-txt_npcinfo = Text("...", origin=(0.5, -0.5), position=(0.5*window.aspect_ratio, -0.4), color=color.black50)
 
 # Eager status
 box_eager_status = Entity(model='quad', origin=(0.5, -0.5), color=color.azure, position=(0, 0))
@@ -273,27 +280,11 @@ def update_eager_status():
     global txt_coordinate
 
     txt_coordinate.text=f"[{player.x:.2f}, {player.y:.2f}]"
-
-def distance_check_npc():
-    someone_closed = False
-    for npc_name, npc_dat in npcs.items():
-        print(f"{npc_name}: {distance(player, npc_dat[0])}")
-        if distance(player, npc_dat[0]) < SCALE_PLAYER * 1:
-            someone_closed = True
-            txt_npcinfo.text = npc_name
-            
-
-    if not someone_closed:
-        print("disabled!")
-        txt_npcinfo.disable()
-    else:
-        print("enabled!")
-        txt_npcinfo.enable()
+    
 
 def update():
     move_player()
     update_eager_status()
-    distance_check_npc()
 
           
 def input(key):
@@ -313,6 +304,10 @@ def input(key):
     if key == 't': # debug
         print("press T, LOCK switch")
         player_data.movable_system = not player_data.movable_system
+
+    if key == 'y': # debug
+        print("press Y, popup close")
+        battle_panel.close()
 
     if key == "q":
         
