@@ -1,19 +1,15 @@
 import os
 import sys
+
 from ursina import *
+from ursina.prefabs.health_bar import HealthBar
+from ursina.prefabs.window_panel import WindowPanel, Space
+
+from lib.common import *
+from lib.player import *
 
 # Basedir
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
-
-# Color
-TRANSPARENT =   (0, 0, 0, 0)
-WHITE =         (255, 255, 255, 255)
-BLACK =         (0, 0, 0, 255)
-DARKGRAY =      (32, 32, 32, 255)
-GRAY =          (128, 128, 128, 255)
-WHITEGRAY =     (192, 192, 192, 255)
-
-ALPHA = lambda pct: int(255 * pct / 100)
 
 def toggle_button_list(button_list):
     for button in button_list:
@@ -84,9 +80,8 @@ def update_map(mapname="test"):
             walls.append(Entity(model="quad", color=color.black, scale=(wall_w, wall_h), x=wall_x, y=wall_y, z=-1, collider="box"))
         
     
-
+player_data = Player()
 player = Entity(model='sphere', color=color.azure, scale=(0.25, 0.25), x=0, y=0, z=-1)
-
 
 button_menu = Button(
     text='Menu', 
@@ -103,15 +98,122 @@ button_list_menu = [
     Button(text="Save & Exit", scale_x=0.2, scale_y=0.05, text_origin=(0,0), position=(0.5*window.aspect_ratio - 0.1, 0.5 - 0.125), on_click=lambda: application.quit())
 ]
 
+IDX_BAR_HP = 0
+IDX_BAR_MP = 1
+IDX_BAR_EXP = 2
+IDX_BAR_ENCOUNTER = 3
+
+bars = [
+    HealthBar(),    # HP
+    HealthBar(),    # MP
+    HealthBar(),    # EXP
+    HealthBar()     # Encounter
+]
+
+battle_panel = WindowPanel(
+    title = "Battle",
+    content=[
+        Space(height=5),
+        Text("..."),
+        Space(height=5),
+        #Button(text='Submit', color=color.azure),
+    ],
+
+)
+
+
+
+def init_battle_UI():
+    global battle_panel
+    
+    # prevent dragging
+    battle_panel.origin = (0, 0)
+    battle_panel.lock = Vec3(1,1,1)
+    battle_panel.y = 0.3
+
+    battle_panel.panel.color = NORMALIZE_COLOR()
+
+def update_bars():
+    global bars
+
+    bars[IDX_BAR_HP].max_value = player_data.HP
+    bars[IDX_BAR_HP].value = player_data.HP_live
+
+    bars[IDX_BAR_MP].max_value = player_data.MP
+    bars[IDX_BAR_MP].value = player_data.MP_live
+
+    bars[IDX_BAR_EXP].max_value = player_data.calculate_required_exp()
+    bars[IDX_BAR_EXP].value = player_data.EXP
+
+    bars[IDX_BAR_ENCOUNTER].value = player_data.encounter
+
+def init_bars():
+    global bars
+    global player_data
+
+    # set visual properties
+    bars[IDX_BAR_HP].bar.color = RED
+    bars[IDX_BAR_HP].position = (-0.45 * window.aspect_ratio, 0.45)
+
+    bars[IDX_BAR_MP].bar.color = BLUE
+    bars[IDX_BAR_MP].position = (-0.45 * window.aspect_ratio, 0.42)
+
+    bars[IDX_BAR_EXP].bar.color = GREEN
+    bars[IDX_BAR_EXP].position = (-0.45 * window.aspect_ratio, 0.39)
+
+    bars[IDX_BAR_ENCOUNTER].bar.color = NORMALIZE_COLOR(DARK_ORANGE)
+    bars[IDX_BAR_ENCOUNTER].position = (-0.5 * window.aspect_ratio, -0.50 + Text.size)
+    bars[IDX_BAR_ENCOUNTER].scale = (1.0 * window.aspect_ratio, Text.size)
+    bars[IDX_BAR_ENCOUNTER].animation_duration = 0
+    bars[IDX_BAR_ENCOUNTER].show_text = False
+
+    # set some (static) values
+    bars[IDX_BAR_HP].min_value = 0
+    bars[IDX_BAR_MP].min_value = 0
+    bars[IDX_BAR_EXP].min_value = 0
+    bars[IDX_BAR_ENCOUNTER].max_value = MAX_ENCOUNTER
+    bars[IDX_BAR_ENCOUNTER].min_value = 0
+
+    # texts
+    texts = [
+        Text(text="HP", position=(-0.48 * window.aspect_ratio, 0.45 - 0.003)),
+        Text(text="MP", position=(-0.48 * window.aspect_ratio, 0.42 - 0.003)),
+        Text(text="EXP", position=(-0.48 * window.aspect_ratio, 0.39 - 0.003))
+    ]
+
+    for txt in texts:
+        txt.color = BLACK
+        txt.resolution = 100 * Text.size
+        txt.scale = 0.9
+        
+    # set initial value
+    update_bars()
+
+def init_player():
+    global player
+    global player_data
+
+    player_data.position = player.position
+
+
 
 camera.add_script(SmoothFollow(target=player, offset=[0,-30], speed=2))
-EditorCamera() # temporary 
+# EditorCamera() # temporary 
 
 update_map()
+
+# periodic update
+def update_periodic():
+    pass
 
 
 # Move
 def move_player():
+    global player_data
+
+    if not player_data.movable():
+        return
+
     move_direction = Vec2((held_keys['d']-held_keys['a']), (held_keys['w']-held_keys['s'])).normalized()
     speed = SPEED_DEFAULT + held_keys['space'] * SPEED_BOOST
     
@@ -135,6 +237,22 @@ def move_player():
             break
         
     player.position += move_direction * speed * time.dt
+    player_data.position = player.position
+    player_data.encounter += 1.0 * 100.0 * (abs(move_direction[0]) + abs(move_direction[1])) * time.dt
+
+    if int(player_data.encounter) != int(player_data.last_encounter):
+        if int(player_data.encounter / 100) != int(player_data.last_check_encounter / 100):
+            # check if battle is needed
+            initiate_battle = random_prob(player_data.encounter / MAX_ENCOUNTER * 100)
+            player_data.last_check_encounter = int(player_data.encounter)
+
+            if initiate_battle:
+                # do battle
+                pass
+
+        update_bars()
+        player_data.last_encounter = int(player_data.encounter)
+
 
 
 # Eager status
@@ -153,15 +271,30 @@ def update():
 
           
 def input(key):
+    global player_data
+
     if key == 'c': # debug
         print(player.x, player.y)
+        player_data.HP_live += 150
+        update_bars()
         print("press C")
         
     if key == 'x': # debug
         print("press X")
+        player_data.HP_live -= 150
+        update_bars()
+
+    if key == 't': # debug
+        print("press T, LOCK switch")
+        player_data.movable_system = not player_data.movable_system
 
     if key == "q":
+        
         print("press Q")
         application.quit()
+
+init_player()
+init_bars()
+init_battle_UI()
 
 app.run()
