@@ -8,6 +8,8 @@ from ursina.prefabs.window_panel import WindowPanel, Space
 from lib.common import *
 from lib.player import *
 
+from Color import *
+
 # Basedir
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -43,16 +45,23 @@ SPEED_BOOST = 2
 # Live map data
 basemap = Entity(model='quad', color=color.gray, scale=(1, 1), x=5, y=5)
 walls = []
+npcs = dict()
 
 def update_map(mapname="test"):
     global basemap
     global walls
+    global npcs
 
     # Cleanup all of components
     destroy(basemap)
     for wall in walls:
         destroy(wall)
         walls.remove(wall)
+    
+    for npc_name, npc_dat in npcs.items():
+        destroy(npc_dat[0])
+        destroy(npc_dat[1])
+    npcs = dict()
 
     # New map path
     mappath = f"{BASEDIR}/map/{mapname}"
@@ -72,7 +81,7 @@ def update_map(mapname="test"):
         walls_tmp = f.read().strip().split("\n") 
         for wall in walls_tmp:
             try:
-                wall_x, wall_y, wall_w, wall_h = list(map(float, wall.split(",")))
+                wall_x, wall_y, wall_w, wall_h = list(wall.split(","))
             except:
                 break
 
@@ -217,8 +226,8 @@ def move_player():
     move_direction = Vec2((held_keys['d']-held_keys['a']), (held_keys['w']-held_keys['s'])).normalized()
     speed = SPEED_DEFAULT + held_keys['space'] * SPEED_BOOST
     
-    dest_x = player.position[0] + move_direction[0] * speed * time.dt
-    dest_y = player.position[1] + move_direction[1] * speed * time.dt
+    dest_x = player.position[0] + (move_direction[0] * speed * time.dt)
+    dest_y = player.position[1] + (move_direction[1] * speed * time.dt)
 
     if not is_in_entity([dest_x, player.position[1]], basemap):
         move_direction[0] = 0
@@ -254,6 +263,7 @@ def move_player():
         player_data.last_encounter = int(player_data.encounter)
 
 
+txt_npcinfo = Text("...", origin=(0.5, -0.5), position=(0.5*window.aspect_ratio, -0.4), color=color.black50)
 
 # Eager status
 box_eager_status = Entity(model='quad', origin=(0.5, -0.5), color=color.azure, position=(0, 0))
@@ -263,11 +273,27 @@ def update_eager_status():
     global txt_coordinate
 
     txt_coordinate.text=f"[{player.x:.2f}, {player.y:.2f}]"
-    
+
+def distance_check_npc():
+    someone_closed = False
+    for npc_name, npc_dat in npcs.items():
+        print(f"{npc_name}: {distance(player, npc_dat[0])}")
+        if distance(player, npc_dat[0]) < SCALE_PLAYER * 1:
+            someone_closed = True
+            txt_npcinfo.text = npc_name
+            
+
+    if not someone_closed:
+        print("disabled!")
+        txt_npcinfo.disable()
+    else:
+        print("enabled!")
+        txt_npcinfo.enable()
 
 def update():
     move_player()
     update_eager_status()
+    distance_check_npc()
 
           
 def input(key):
