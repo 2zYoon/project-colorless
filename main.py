@@ -1,12 +1,15 @@
 import os
 import sys
 
+import textwrap
+
 from ursina import *
 from ursina.prefabs.health_bar import HealthBar
 from ursina.prefabs.window_panel import WindowPanel, Space
 
 from lib.common import *
 from lib.player import *
+
 
 # Basedir
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
@@ -107,47 +110,126 @@ bars = [
     HealthBar(),    # HP
     HealthBar(),    # MP
     HealthBar(),    # EXP
-    HealthBar()     # Encounter
+    HealthBar(),    # Encounter
 ]
 
-IDX_END_BATTLE = 3
-battle_panel = WindowPanel(
-    title = "Battle",
-    content=[
-        Space(height=5),
-        Text("..."),
-        Space(height=5),
-        Button(text='End Battle', color=color.azure),
-    ],
-    popup=True
-)
+IDX_BATTLE_MON_NAME = 0
+IDX_BATTLE_MON_HP_BAR = 1
+IDX_BATTLE_MON_SPRITE = 2
+IDX_BATTLE_CHAR_SPRITE = 3
+IDX_BATTLE_LOG = 4
+
+BATTLE_UI_BG_SCALE_X = 0.5
+BATTLE_UI_BG_SCALE_Y = 0.7
+
+# its y-scale follows the main bg
+BATTLE_UI_LOG_BG_SCALE_X = 0.35
+
+# its y-scale follows the main bg
+BATTLE_UI_ACTION_BG_SCALE_X = 0.35
+
+BATTLE_UI_MON_SPRITE_SCALE_SMALL = 0.15
+BATTLE_UI_MON_SPRITE_SCALE_LARGE = 0.30
+BATTLE_UI_CHAR_SPRITE_SCLAE = 0.15
+
+BATTLE_UI_MARGIN = 0.01
+
+BATTLE_UI_LOG_FONTSIZE = 0.75
+BATTLE_UI_LOG_MAX_CHAR_PER_LINE = 31
+BATTLE_UI_LOG_MAX_LINE = 34
+
+battle_ui_bgs = [
+    # main bg
+    Entity(model='quad', parent=camera.ui, scale=(BATTLE_UI_BG_SCALE_X, BATTLE_UI_BG_SCALE_Y), color=NORMALIZE_COLOR(UI_BASE_DARKGRAY),
+        position=(0,0)),
+    # log bg
+    Entity(model='quad', parent=camera.ui, scale=(BATTLE_UI_LOG_BG_SCALE_X, BATTLE_UI_BG_SCALE_Y), color=NORMALIZE_COLOR(UI_BASE_DARKGRAY),
+        position=(0.5 * BATTLE_UI_BG_SCALE_X + 0.5 * BATTLE_UI_LOG_BG_SCALE_X + BATTLE_UI_MARGIN, 0, 0)),
+    # action bg
+    Entity(model='quad', parent=camera.ui, scale=(BATTLE_UI_ACTION_BG_SCALE_X, BATTLE_UI_BG_SCALE_Y), color=NORMALIZE_COLOR(UI_BASE_DARKGRAY),
+        position=(-0.5 * BATTLE_UI_BG_SCALE_X - 0.5 * BATTLE_UI_ACTION_BG_SCALE_X - BATTLE_UI_MARGIN, 0, 0))
+]
+battle_ui = [
+    # main bg
+    Text("sample-monster", color=NORMALIZE_COLOR(WHITE), scale=1, 
+        position=Vec3(-0.5 * BATTLE_UI_BG_SCALE_X + BATTLE_UI_MARGIN, 0.5 * BATTLE_UI_BG_SCALE_Y - 2 * Text.size, -0.1)),
+    HealthBar(scale=(BATTLE_UI_BG_SCALE_X - 2 * BATTLE_UI_MARGIN, Text.size),
+        position=Vec3(-0.5 * BATTLE_UI_BG_SCALE_X + BATTLE_UI_MARGIN, 0.5 * BATTLE_UI_BG_SCALE_Y - 3 * Text.size, -0.1)),
+    Sprite(parent=camera.ui, scale=(BATTLE_UI_MON_SPRITE_SCALE_LARGE, BATTLE_UI_MON_SPRITE_SCALE_LARGE), origin=(0,0),
+        position=Vec3(0, 0.5 * BATTLE_UI_BG_SCALE_Y - 5 * Text.size - 0.5 * BATTLE_UI_MON_SPRITE_SCALE_LARGE, -0.1)),
+    Sprite(parent=camera.ui, scale=(BATTLE_UI_CHAR_SPRITE_SCLAE, BATTLE_UI_CHAR_SPRITE_SCLAE), origin=(0,0),
+        position=Vec3(0, 0.5 * BATTLE_UI_BG_SCALE_Y - 5 * Text.size - BATTLE_UI_MON_SPRITE_SCALE_LARGE - BATTLE_UI_CHAR_SPRITE_SCLAE, -0.1)),
+    
+    # log bg
+    Text(text="No log...\n", scale=BATTLE_UI_LOG_FONTSIZE, font="./asset/fonts/Consolas.ttf",
+        position=Vec3(0.5*BATTLE_UI_BG_SCALE_X + 2*BATTLE_UI_MARGIN, 0.5*BATTLE_UI_BG_SCALE_Y - 2*Text.size, -0.1)),
+
+]
+
+# Rarely changes (except 'enabled')
+battle_ui_misc = [
+    Text("Battle", color=NORMALIZE_COLOR(WHITE), scale=1.5, 
+        position=Vec3(-0.5 * BATTLE_UI_BG_SCALE_X, 0.5 * BATTLE_UI_BG_SCALE_Y, -0.1)),
+    Text("Log", color=NORMALIZE_COLOR(WHITE), scale=1.5, 
+        position=Vec3(0.5 * BATTLE_UI_BG_SCALE_X + BATTLE_UI_MARGIN, 0.5 * BATTLE_UI_BG_SCALE_Y, -0.1)),
+    Text("Action", color=NORMALIZE_COLOR(WHITE), scale=1.5, 
+        position=Vec3(-0.5 * BATTLE_UI_BG_SCALE_X - BATTLE_UI_ACTION_BG_SCALE_X - BATTLE_UI_MARGIN, 0.5 * BATTLE_UI_BG_SCALE_Y, -0.1)),
+]
 
 def close_battle():
-    global battle_panel
-    
-    battle_panel.close()
+    global player_data
+    global battle_ui_bgs
+    global battle_ui
+    global battle_ui_misc
+
+    for e in battle_ui:
+        e.enabled = False
+    for e in battle_ui_misc:
+        e.enabled = False 
+    for e in battle_ui_bgs:
+        e.enabled = False
+
     player_data.movable_system = True
+    player_data.encounter = 0
+    update_bars()   
+
+def append_battle_log(msg="..."):
+    global battle_ui
+    cur_line = len(battle_ui[IDX_BATTLE_LOG].text.split("\n")) 
+    
+    # If the number of line exceeds the limit, cut oldest one
+    if cur_line >= BATTLE_UI_LOG_MAX_LINE:
+        battle_ui[IDX_BATTLE_LOG].text = "\n".join(battle_ui[IDX_BATTLE_LOG].text.split("\n")[cur_line - BATTLE_UI_LOG_MAX_LINE + 1:])
+  
+    battle_ui[IDX_BATTLE_LOG].text += "\n".join(textwrap.wrap(msg, width=BATTLE_UI_LOG_MAX_CHAR_PER_LINE)) + "\n"
+
 
 def open_battle():
-    global battle_panel
+    global player_data
+    global battle_ui_bgs
+    global battle_ui
+    global battle_ui_misc
 
-    battle_panel.enabled = True
+    for e in battle_ui:
+        e.enabled = True
+    for e in battle_ui_misc:
+        e.enabled = True
+    for e in battle_ui_bgs:
+        e.enabled = True
+
+    battle_ui[IDX_BATTLE_MON_SPRITE].texture = "./asset/monster/sample-dragon.png"
+    battle_ui[IDX_BATTLE_CHAR_SPRITE].texture = "./asset/character/sample-char.png"
+
     player_data.movable_system = False
 
 def init_battle_UI():
-    global battle_panel
-    
-    # prevent dragging
-    battle_panel.origin = (0, 0)
-    battle_panel.lock = Vec3(1,1,1)
-    battle_panel.y = 0.3
+    global battle_ui
+    global bars
 
-    battle_panel.panel.color = NORMALIZE_COLOR((25, 25, 255, 100))
+    # initially closed
+    close_battle()
+    pass
 
-    battle_panel.content[IDX_END_BATTLE].on_click = close_battle
-
-    # popup, but disable manual closing
-    battle_panel.bg.on_click = None
 
 def update_bars():
     global bars
@@ -183,18 +265,22 @@ def init_bars():
     bars[IDX_BAR_ENCOUNTER].animation_duration = 0
     bars[IDX_BAR_ENCOUNTER].show_text = False
 
+    #
     # set some (static) values
+    #
     bars[IDX_BAR_HP].min_value = 0
     bars[IDX_BAR_MP].min_value = 0
     bars[IDX_BAR_EXP].min_value = 0
-    bars[IDX_BAR_ENCOUNTER].max_value = MAX_ENCOUNTER
+    # In most case, the actual max value cannot be reached, so we use 20% of MAX_ENCOUNTER as a max value
+    bars[IDX_BAR_ENCOUNTER].max_value = MAX_ENCOUNTER / 5
     bars[IDX_BAR_ENCOUNTER].min_value = 0
 
     # texts
     texts = [
-        Text(text="HP", position=(-0.48 * window.aspect_ratio, 0.45 - 0.003)),
+        Text(text="HP", position=(-0.48 * window.aspect_ratio, 0.45 - 0.003)), 
         Text(text="MP", position=(-0.48 * window.aspect_ratio, 0.42 - 0.003)),
-        Text(text="EXP", position=(-0.48 * window.aspect_ratio, 0.39 - 0.003))
+        Text(text="EXP", position=(-0.48 * window.aspect_ratio, 0.39 - 0.003)),
+        Text(text="Encounter Gauge", position=(-0.5 * window.aspect_ratio, -0.50 + 2 * Text.size)),
     ]
 
     for txt in texts:
@@ -306,8 +392,12 @@ def input(key):
         player_data.movable_system = not player_data.movable_system
 
     if key == 'y': # debug
-        print("press Y, popup close")
-        battle_panel.close()
+        close_battle()
+
+    if key == "p":
+        print("update")
+        append_battle_log()
+
 
     if key == "q":
         
