@@ -2,6 +2,7 @@ import os
 import sys
 
 import textwrap
+import time
 
 from ursina import *
 from ursina.prefabs.health_bar import HealthBar
@@ -138,6 +139,7 @@ BATTLE_UI_LOG_FONTSIZE = 0.75
 BATTLE_UI_LOG_MAX_CHAR_PER_LINE = 31
 BATTLE_UI_LOG_MAX_LINE = 34
 
+battle_ui_darkness =  Entity(model='quad', parent=camera.ui, scale=(window.aspect_ratio, 1), color=NORMALIZE_COLOR(UI_BASE_DARKGRAY))
 battle_ui_bgs = [
     # main bg
     Entity(model='quad', parent=camera.ui, scale=(BATTLE_UI_BG_SCALE_X, BATTLE_UI_BG_SCALE_Y), color=NORMALIZE_COLOR(UI_BASE_DARKGRAY),
@@ -181,6 +183,7 @@ def close_battle():
     global battle_ui_bgs
     global battle_ui
     global battle_ui_misc
+    global battle_ui_darkness
 
     for e in battle_ui:
         e.enabled = False
@@ -189,26 +192,27 @@ def close_battle():
     for e in battle_ui_bgs:
         e.enabled = False
 
+    battle_ui_darkness.enabled = False
+
     player_data.movable_system = True
     player_data.encounter = 0
     update_bars()   
-
-def append_battle_log(msg="..."):
-    global battle_ui
-    cur_line = len(battle_ui[IDX_BATTLE_LOG].text.split("\n")) 
-    
-    # If the number of line exceeds the limit, cut oldest one
-    if cur_line >= BATTLE_UI_LOG_MAX_LINE:
-        battle_ui[IDX_BATTLE_LOG].text = "\n".join(battle_ui[IDX_BATTLE_LOG].text.split("\n")[cur_line - BATTLE_UI_LOG_MAX_LINE + 1:])
-  
-    battle_ui[IDX_BATTLE_LOG].text += "\n".join(textwrap.wrap(msg, width=BATTLE_UI_LOG_MAX_CHAR_PER_LINE)) + "\n"
-
 
 def open_battle():
     global player_data
     global battle_ui_bgs
     global battle_ui
     global battle_ui_misc
+    global battle_ui_darkness
+
+    # simple animation
+
+    battle_ui_darkness.enabled = True
+    for i in range(100):
+       #time.sleep(0.1)
+       # how?
+        battle_ui_darkness.color = NORMALIZE_COLOR((0, 0, 0, 2*i))
+
 
     for e in battle_ui:
         e.enabled = True
@@ -221,6 +225,19 @@ def open_battle():
     battle_ui[IDX_BATTLE_CHAR_SPRITE].texture = "./asset/character/sample-char.png"
 
     player_data.movable_system = False
+
+
+def append_battle_log(msg="..."):
+    global battle_ui
+    cur_line = len(battle_ui[IDX_BATTLE_LOG].text.split("\n")) 
+    
+    # If the number of line exceeds the limit, cut oldest one
+    if cur_line >= BATTLE_UI_LOG_MAX_LINE:
+        battle_ui[IDX_BATTLE_LOG].text = "\n".join(battle_ui[IDX_BATTLE_LOG].text.split("\n")[cur_line - BATTLE_UI_LOG_MAX_LINE + 1:])
+  
+    battle_ui[IDX_BATTLE_LOG].text += "\n".join(textwrap.wrap(msg, width=BATTLE_UI_LOG_MAX_CHAR_PER_LINE)) + "\n"
+
+
 
 def init_battle_UI():
     global battle_ui
@@ -405,7 +422,7 @@ def input(key):
         application.quit()
 
 init_player()
-init_bars()
 init_battle_UI()
+init_bars()
 
 app.run()
